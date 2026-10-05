@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Grade Gap Diagnostic — GCSE Maths</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --board:#ECEFF4;
+    --board-deep:#FFFFFF;
+    --chalk:#2E3440;
+    --chalk-dim:#4C566A;
+    --pencil:#9AABB8;
+    --red:#D08770;
+    --red-deep:#B8714E;
+    --gold:#D08770;
+    --green-pass:#A3BE8C;
+    --error:#BF616A;
+    --review-bg:#2E3440;
+    --review-text:#ECEFF4;
+    --rule:#D8DEE9;
+    --radius:8px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--board);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(94,129,172,0.08), transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(208,135,112,0.06), transparent 45%);
+    color:var(--chalk);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  ::selection{ background:var(--red); color:var(--chalk); }
+
+  :focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:3px;
+  }
+
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:48px 24px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:1px;
+    background:var(--gold);
+  }
+
+  h1{
+    font-family:'Spectral', serif;
+    font-weight:600;
+    font-size:clamp(28px, 5.5vw, 40px);
+    line-height:1.15;
+    margin:0 0 16px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--red);
+  }
+
+  .lede{
+    color:var(--chalk-dim);
+    font-size:16px;
+    line-height:1.65;
+    max-width:50ch;
+    margin:0 0 32px;
+  }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:#5E81AC;
+    border:none;
+    box-shadow:0 4px 24px rgba(46,52,64,0.18);
+    border-radius:var(--radius);
+    padding:32px;
+    position:relative;
+  }
+  .card p, .card .meta-item, .card .meta-item b{
+    color:#ECEFF4 !important;
+  }
+  .card::before{ display:none; }
+
+  /* ---------- Start screen ---------- */
+  .meta-row{
+    display:flex;
+    gap:24px;
+    margin:28px 0 30px;
+    flex-wrap:wrap;
+  }
+  .meta-item{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--pencil);
+  }
+  .meta-item b{
+    display:block;
+    font-family:'Spectral', serif;
+    font-size:22px;
+    color:var(--chalk);
+    font-weight:600;
+  }
+
+  button{
+    font-family:'Inter', sans-serif;
+    cursor:pointer;
+    border:none;
+  }
+
+  .btn-primary{
+    background:var(--red);
+    color:#FFFFFF !important;
+    font-size:15px;
+    font-weight:600;
+    padding:15px 28px;
+    border-radius:var(--radius);
+    width:100%;
+    box-shadow:0 6px 20px rgba(0,0,0,0.5);
+    transition:background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary:hover{ background:var(--red-deep); box-shadow:0 8px 24px rgba(0,0,0,0.55); }
+  .btn-primary:active{ transform:scale(0.99); }
+  .btn-primary:disabled{
+    background:#41493F;
+    color:var(--pencil);
+    cursor:not-allowed;
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .progress-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:24px;
+  }
+  .progress-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--pencil);
+    letter-spacing:0.04em;
+  }
+  .progress-track{
+    height:2px;
+    background:var(--rule);
+    border-radius:2px;
+    overflow:hidden;
+    margin-bottom:32px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--gold);
+    width:0%;
+    transition:width 0.35s ease;
+  }
+
+  .topic-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#FFFFFF;
+    background:var(--red);
+    border:none;
+    padding:5px 12px;
+    border-radius:20px;
+    margin-bottom:16px;
+  }
+
+  .question{
+    font-family:'Spectral', serif;
+    font-size:21px;
+    line-height:1.4;
+    font-weight:600;
+    margin:0 0 24px;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .option{
+    text-align:left;
+    background:#FFFFFF;
+    border:1px solid var(--rule);
+    color:#2E3440;
+    padding:14px 16px;
+    border-radius:var(--radius);
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    transition:border-color 0.15s ease, background 0.15s ease;
+    box-shadow:0 1px 4px rgba(46,52,64,0.07);
+  }
+  .option:hover{ border:none; padding:15px 17px; background:#FAFAFA; box-shadow:inset 0 0 0 3px var(--red), 0 8px 24px rgba(46,52,64,0.22); }
+  .option .letter{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--red);
+    width:18px;
+    flex-shrink:0;
+  }
+  .option.selected{
+    border:none;
+    padding:15px 17px;
+    background:#FFFFFF;
+    box-shadow:inset 0 0 0 3px var(--red), 0 8px 24px rgba(46,52,64,0.22);
+  }
+  .option.correct{
+    border-color:var(--green-pass);
+    background:rgba(163,190,140,0.2);
+  }
+  .option.incorrect{
+    border-color:var(--red);
+    background:rgba(191,97,106,0.15);
+  }
+  .option:disabled{ cursor:default; }
+
+  .feedback{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px dashed var(--rule);
+    color:var(--chalk-dim);
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback b{ color:var(--chalk); }
+
+  .next-row{
+    margin-top:22px;
+  }
+
+  /* ---------- Results screen ---------- */
+  .stamp-zone{
+    display:flex;
+    justify-content:center;
+    padding:8px 0 28px;
+  }
+  .stamp{
+    width:128px; height:128px;
+    background:var(--error);
+    border:none;
+    border-radius:50%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 24px rgba(208,135,112,0.4);
+    transform:rotate(-8deg) scale(0.8);
+    opacity:0;
+    animation:stampIn 0.5s 0.15s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stamp{ animation:none; opacity:1; transform:rotate(-8deg); }
+  }
+  @keyframes stampIn{
+    0%{ opacity:0; transform:rotate(-8deg) scale(1.4); }
+    60%{ opacity:1; }
+    100%{ opacity:1; transform:rotate(-8deg) scale(1); }
+  }
+  .stamp-grade{
+    font-family:'Spectral', serif;
+    font-size:36px;
+    font-weight:700;
+    color:#FFFFFF;
+    line-height:1;
+  }
+  .stamp-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.8);
+    margin-bottom:2px;
+  }
+
+  .results-heading{
+    text-align:center;
+    font-family:'Spectral', serif;
+    font-size:26px;
+    font-weight:700;
+    margin:0 0 6px;
+    white-space:nowrap;
+  }
+  .results-sub{
+    text-align:center;
+    color:var(--chalk-dim);
+    font-size:14px;
+    margin:0 0 32px;
+  }
+
+  .weak-list{
+    list-style:none;
+    padding:0;
+    margin:0 0 28px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .weak-item{
+    border-left:2px solid var(--error);
+    background:rgba(191,97,106,0.1);
+    border-radius:0 var(--radius) var(--radius) 0;
+    padding:12px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .weak-item .topic-name{
+    font-family:'Spectral', serif;
+    font-weight:600;
+    font-size:15px;
+    display:block;
+  }
+  .weak-item .topic-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--chalk-dim);
+    margin-top:3px;
+    display:block;
+  }
+  .weak-detail{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.25s ease;
+    padding:0 16px;
+  }
+  .weak-item.open .weak-detail{
+    max-height:300px;
+    padding:0 16px 16px;
+  }
+  .detail-question{
+    font-family:'Spectral', serif;
+    font-size:15px;
+    font-weight:600;
+    margin:6px 0 14px;
+    padding-top:14px;
+    border-top:1px dashed var(--rule);
+  }
+  .detail-line{
+    font-size:14px;
+    margin:0 0 8px;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .detail-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    flex:0 0 110px;
+  }
+  .wrong-line .detail-tag{ color:var(--error); }
+  .wrong-line{ color:var(--chalk-dim); }
+  .correct-line .detail-tag{ color:var(--green-pass); }
+  .correct-line{ color:var(--chalk); }
+  .detail-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--chalk-dim);
+    line-height:1.6;
+    margin:10px 0 0;
+  }
+
+  .strong-note{
+    font-size:13.5px;
+    color:var(--chalk-dim);
+    text-align:center;
+    margin:-10px 0 28px;
+  }
+
+  hr.rule{
+    border:none;
+    border-top:1px dashed var(--rule);
+    margin:28px 0;
+  }
+
+  .capture-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+  }
+  .capture-title{
+    font-family:'Spectral', serif;
+    font-size:clamp(18px, 3.5vw, 28px);
+    font-weight:700;
+    color:var(--chalk);
+    margin:0 0 10px;
+    line-height:1.15;
+  }
+  .capture-copy{
+    font-size:17px;
+    color:var(--chalk-dim);
+    line-height:1.65;
+    margin:0 0 20px;
+  }
+
+  form{ display:flex; flex-direction:column; gap:10px; }
+  select, input[type="email"], input[type="text"]{
+    width:100%;
+    background:var(--board);
+    border:1px solid var(--rule);
+    color:var(--chalk);
+    padding:13px 14px;
+    border-radius:var(--radius);
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+  }
+  select:focus, input:focus{ border-color:var(--gold); }
+
+  .role-row{ display:flex; gap:10px; }
+  .role-row label{ flex:1; }
+  .role-pill{
+    display:block;
+    text-align:center;
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:11px 10px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--chalk-dim);
+    transition:all 0.15s ease;
+  }
+  input[type="radio"]{ position:absolute; opacity:0; }
+  input[type="radio"]:checked + .role-pill{
+    border-color:var(--gold);
+    color:var(--chalk);
+    background:rgba(94,129,172,0.12);
+  }
+
+  .micro{
+    font-size:11.5px;
+    color:var(--pencil);
+    text-align:center;
+    margin-top:14px;
+    line-height:1.5;
+    font-style:italic;
+  }
+
+  .thanks{
+    text-align:center;
+    padding:12px 0 4px;
+  }
+  .thanks .check{
+    font-size:30px;
+    color:var(--green-pass);
+    margin-bottom:10px;
+  }
+  .thanks h3{
+    font-family:'Spectral', serif;
+    margin:0 0 8px;
+    font-size:19px;
+  }
+  .thanks p{
+    color:var(--chalk-dim);
+    font-size:14px;
+    line-height:1.6;
+    margin:0;
+  }
+
+  /* ---------- Testimonials ---------- */
+  .testimonial-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:16px;
+  }
+  .tcard{
+    background:#2E3440;
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:var(--radius);
+    box-shadow:0 4px 20px rgba(46,52,64,0.2);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+  }
+  .stars{
+    color:var(--gold);
+    font-size:14px;
+    letter-spacing:2px;
+    margin-bottom:12px;
+  }
+  .tquote{
+    margin:0 0 14px;
+    color:#ECEFF4;
+    font-size:13.5px;
+    line-height:1.65;
+    flex:1;
+  }
+  .tname{
+    margin:0;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--gold);
+    letter-spacing:0.06em;
+  }
+
+  @media(max-width:600px){
+    .testimonial-row{
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;
+      gap:12px;
+      padding-bottom:12px;
+      scrollbar-width:none;
+    }
+    .testimonial-row::-webkit-scrollbar{ display:none; }
+    .tcard{
+      flex:0 0 85%;
+      scroll-snap-align:start;
+    }
+  }
+
+  /* ---------- Results layout ---------- */
+  .results-layout{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+  .results-card{
+    width:100%;
+    background:#FFFFFF !important;
+    border:2px dashed #5E81AC !important;
+    box-shadow:none !important;
+    color:var(--chalk) !important;
+  }
+  .results-card .results-heading,
+  .results-card .results-sub{
+    color:var(--chalk) !important;
+  }
+  .results-capture{
+    width:100%;
+  }
+  .results-capture input[type="text"],
+  .results-capture input[type="email"]{
+    background:#FFFFFF;
+    border:1px solid var(--rule);
+    color:var(--chalk);
+  }
+
+
+  /* ---------- Profile ---------- */
+  .profile-box{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    background:#FFFFFF;
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:28px;
+    margin-top:32px;
+    box-shadow:0 2px 16px rgba(46,52,64,0.08);
+  }
+  .profile-photo{
+    width:96px;
+    height:96px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    border:3px solid var(--red);
+  }
+  .profile-name{
+    font-family:'Spectral', serif;
+    font-size:19px;
+    font-weight:700;
+    color:var(--chalk);
+    margin:0 0 4px;
+  }
+  .profile-role{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin:0 0 10px;
+  }
+  .profile-bio{
+    font-size:13.5px;
+    color:var(--chalk-dim);
+    line-height:1.65;
+    margin:0 0 8px;
+  }
+  .profile-quals{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--pencil);
+    line-height:1.6;
+  }
+  @media(max-width:520px){
+    .profile-box{ flex-direction:column; text-align:center; }
+  }
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+
+  footer{
+    text-align:center;
+    margin-top:36px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--pencil);
+    letter-spacing:0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div id="page-header">
+  <h1 style="font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--pencil); margin:0 0 16px;">Maths Tutor Nottingham</h1>
+  <p id="page-lede" class="lede" style="font-family:'Spectral',serif; font-size:clamp(26px,5vw,38px); font-weight:600; line-height:1.2; color:var(--chalk); margin:0 0 24px; letter-spacing:-0.01em;">In <em style="color:var(--gold); font-style:normal;">8 minutes</em>, learn exactly what's holding back your child's grade&nbsp;9 in&nbsp;Maths.</p>
+  </div>
+  <!-- START SCREEN -->
+  <section class="screen active" id="screen-start">
+    <div class="card">
+      <p style="margin:0 0 20px; color:var(--chalk-dim); font-size:15px; line-height:1.65;">Take this free 8 minute mini-test below that pinpoints the specific topics keeping your child from top grades.</p>
+      <button class="btn-primary" onclick="startQuiz()">Start the 8 Minute Mini-Test</button>
+      <div style="display:flex; justify-content:space-between; margin-top:14px; padding:0 16px;">
+        <div class="meta-item" style="margin:0; text-align:center;"><b>8</b>questions</div>
+        <div class="meta-item" style="margin:0; text-align:center;"><b>~8 mins</b>to complete</div>
+        <div class="meta-item" style="margin:0; text-align:center;"><b>✓ Examiner</b>data backed</div>
+      </div>
+    </div>
+
+    <hr style="border:none; height:3px; background:repeating-linear-gradient(90deg, var(--red) 0 14px, transparent 14px 22px); opacity:0.55; margin:24px 0;">
+    <div class="testimonial-row">
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <p class="tquote">"I had no idea my daughter was dropping marks on ratio every single paper. Ten minutes with this guide and she jumped from a 6 to a 7 in her mock."</p>
+        <p class="tname">SARAH M. — PARENT, NOTTINGHAM</p>
+      </div>
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <p class="tquote">"As a tutor I waste so much time finding where a student's gaps are. This diagnostic does it in 8 minutes flat — I now use it at the start of every new student session."</p>
+        <p class="tname">JAMES T. — MATHS TUTOR, LEEDS</p>
+      </div>
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <p class="tquote">"My son was revising for hours and still not improving. The diagnostic showed us he was spending all his time on topics he already knew. Total game changer."</p>
+        <p class="tname">PRIYA K. — PARENT, LEICESTER</p>
+      </div>
+    </div>
+
+
+    <hr style="border:none; height:3px; background:repeating-linear-gradient(90deg, var(--red) 0 14px, transparent 14px 22px); opacity:0.55; margin:32px 0 24px;">
+    <div class="profile-box">
+      <img class="profile-photo" src="data:image/jpeg;base64,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" alt="Nikita Patel">
+      <div>
+        <p class="profile-name">👋 Hi, I'm Nikita Anderson - Head Tutor</p>
+        <p class="profile-role">Qualified Teacher &amp; Maths Tutor, Nottingham</p>
+        <p class="profile-bio">Qualified Teacher, KS4 Coordinator, Tutor of 12 Years and Clinical Pharmacist.</p>
+        <p class="profile-quals">BSc &amp; MSc Pharmacy &nbsp;|&nbsp; MSc Teaching, PGCE, QTS</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section class="screen" id="screen-quiz">
+    <div class="card">
+      <div class="progress-row">
+        <span class="progress-label" id="progress-label">Question 1 of 8</span>
+        <span class="progress-label" id="progress-score">0 correct</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+      <span class="topic-tag" id="q-topic">Topic</span>
+      <p class="question" id="q-text">Question text</p>
+
+      <div class="options" id="q-options"></div>
+
+      <div class="next-row">
+        <button class="btn-primary" id="next-btn" disabled onclick="nextQuestion()">Next question</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section class="screen" id="screen-results">
+    <div class="results-layout">
+
+      <!-- Grade card -->
+      <div class="card results-card">
+        <div style="display:flex; align-items:center; gap:20px;">
+          <div class="stamp-zone" style="padding:0; flex-shrink:0;">
+            <div class="stamp" style="width:100px; height:100px;">
+              <span class="stamp-grade" id="stamp-grade">7</span>
+            </div>
+          </div>
+          <div>
+            <h2 class="results-heading" style="text-align:left; white-space:normal; margin-bottom:6px;">Your Estimated Grade: <span id="results-grade-text">7</span></h2>
+            <p class="results-sub" style="text-align:left; margin:0;" id="results-sub">0 of 8 correct</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: capture form (outside card) -->
+      <div class="results-capture">
+        <div id="capture-block">
+          <h3 class="capture-title">Now We Know EXACTLY What's Holding Your Child Back. Let's Fix It.</h3>
+          <p class="capture-copy" style="color:var(--chalk-dim);">Stop guessing what to revise. One Grade Booster call and you'll have a clear, personalised plan to get your child to the grade they deserve — and it's completely <strong style="color:var(--chalk);">FREE</strong>.</p>
+          <button class="btn-primary" onclick="window.location='#'">Book My "Grade Booster" Call</button>
+        </div>
+
+        <div class="thanks" id="thanks-block" style="display:none;">
+          <div class="check">&#10003;</div>
+          <h3 style="color:var(--chalk);">Report on its way</h3>
+          <p style="color:var(--chalk-dim);">Check your inbox for the full breakdown — and the matching teaching steps for each weak topic.</p>
+        </div>
+      </div>
+
+      <hr style="border:none; height:3px; background:repeating-linear-gradient(90deg, var(--red) 0 14px, transparent 14px 22px); opacity:0.55; margin:24px 0;">
+      <div class="testimonial-row">
+        <div class="tcard">
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="tquote">"I had no idea my daughter was dropping marks on ratio every single paper. Ten minutes with this guide and she jumped from a 6 to a 7 in her mock."</p>
+          <p class="tname">SARAH M. &mdash; PARENT, NOTTINGHAM</p>
+        </div>
+        <div class="tcard">
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="tquote">"As a tutor I waste so much time finding where a student&#39;s gaps are. This diagnostic does it in 8 minutes flat &mdash; I now use it at the start of every new student session."</p>
+          <p class="tname">JAMES T. &mdash; MATHS TUTOR, LEEDS</p>
+        </div>
+        <div class="tcard">
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="tquote">"My son was revising for hours and still not improving. The diagnostic showed us he was spending all his time on topics he already knew. Total game changer."</p>
+          <p class="tname">PRIYA K. &mdash; PARENT, LEICESTER</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>The Grade Gap Diagnostic — built from real GCSE examiner mistake patterns</footer>
+</div>
+
+<script>
+  // ---------- Question bank ----------
+  // Each question is pinned to the grade boundary it's drawn from.
+  const QUESTIONS = [
+    {
+      topic: "Number — Fractions",
+      grade: 4,
+      text: "What is 3/8 + 1/4?",
+      options: ["4/12", "5/8", "1/2", "7/8"],
+      correct: 1,
+      mistakeNote: "Common error: adding numerators and denominators straight across without finding a common denominator first."
+    },
+    {
+      topic: "Ratio & Proportion",
+      grade: 5,
+      text: "A recipe uses flour and sugar in the ratio 5:2. If 350g of flour is used, how much sugar is needed?",
+      options: ["70g", "140g", "175g", "100g"],
+      correct: 1,
+      mistakeNote: "Common error: dividing 350 by the wrong part of the ratio, or forgetting to find the value of one share first."
+    },
+    {
+      topic: "Algebra — Equations",
+      grade: 5,
+      text: "Solve: 3(x − 2) = 15",
+      options: ["x = 5", "x = 7", "x = 4.3", "x = 9"],
+      correct: 1,
+      mistakeNote: "Common error: expanding the bracket incorrectly, or adding 2 before dividing by 3."
+    },
+    {
+      topic: "Geometry — Angles",
+      grade: 6,
+      text: "A triangle has angles of 55° and 72°. What is the third angle?",
+      options: ["53°", "63°", "47°", "73°"],
+      correct: 0,
+      mistakeNote: "Common error: forgetting that angles in a triangle sum to 180°, often used 360° instead."
+    },
+    {
+      topic: "Algebra — Quadratics",
+      grade: 7,
+      text: "Factorise: x² + 5x + 6",
+      options: ["(x+2)(x+3)", "(x+1)(x+6)", "(x+5)(x+1)", "(x-2)(x-3)"],
+      correct: 0,
+      mistakeNote: "Common error: picking factor pairs of 6 that don't sum to 5 — a sign of not testing the pair systematically."
+    },
+    {
+      topic: "Statistics — Averages",
+      grade: 6,
+      text: "Find the median of: 4, 9, 2, 7, 5, 11, 3",
+      options: ["5", "7", "4", "9"],
+      correct: 0,
+      mistakeNote: "Common error: forgetting to order the data first before finding the middle value."
+    },
+    {
+      topic: "Probability",
+      grade: 7,
+      text: "A bag has 4 red and 6 blue balls. Two are drawn without replacement. What's the probability both are red?",
+      options: ["2/15", "4/25", "2/9", "1/5"],
+      correct: 0,
+      mistakeNote: "Common error: treating the second draw as independent and not adjusting the denominator after the first ball is removed."
+    },
+    {
+      topic: "Algebra — Graphs",
+      grade: 8,
+      text: "What is the gradient of the line joining (1, 2) and (4, 11)?",
+      options: ["3", "9", "4.5", "2"],
+      correct: 0,
+      mistakeNote: "Common error: dividing the change in x by the change in y instead of the other way round."
+    }
+  ];
+
+  let current = 0;
+  let score = 0;
+  const wrongQuestions = [];
+  const userAnswers = new Array(QUESTIONS.length).fill(null);
+
+  function startQuiz(){
+    show('screen-quiz');
+    renderQuestion();
+  }
+
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id === 'screen-results'){
+      document.getElementById('page-lede').style.display = 'none';
+      document.getElementById('page-header').style.display = 'none';
+    }
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function renderQuestion(){
+    const q = QUESTIONS[current];
+    document.getElementById('progress-label').textContent = `Question ${current+1} of ${QUESTIONS.length}`;
+    document.getElementById('progress-score').textContent = `${current} answered`;
+    document.getElementById('progress-fill').style.width = `${(current/QUESTIONS.length)*100}%`;
+    document.getElementById('q-topic').textContent = q.topic;
+    document.getElementById('q-text').textContent = q.text;
+
+    const optWrap = document.getElementById('q-options');
+    optWrap.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      if(userAnswers[current] === i) btn.classList.add('selected');
+      btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+      btn.onclick = () => selectAnswer(i);
+      optWrap.appendChild(btn);
+    });
+
+    document.getElementById('next-btn').disabled = userAnswers[current] === null;
+    document.getElementById('next-btn').textContent = current === QUESTIONS.length - 1 ? 'See my results' : 'Next question';
+  }
+
+  function selectAnswer(i){
+    userAnswers[current] = i;
+    document.querySelectorAll('#q-options .option').forEach((el, idx) => {
+      el.classList.toggle('selected', idx === i);
+    });
+    document.getElementById('next-btn').disabled = false;
+  }
+
+  function nextQuestion(){
+    current++;
+    if(current >= QUESTIONS.length){
+      tallyAnswers();
+      showResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function tallyAnswers(){
+    score = 0;
+    wrongQuestions.length = 0;
+    QUESTIONS.forEach((q, idx) => {
+      if(userAnswers[idx] === q.correct){
+        score++;
+      } else {
+        wrongQuestions.push({ ...q, qIndex: idx });
+      }
+    });
+  }
+
+  function showResults(){
+    document.getElementById('progress-fill').style.width = '100%';
+
+    // Estimate grade band from score
+    let grade, band;
+    if(score <= 2){ grade = '3–4'; }
+    else if(score <= 4){ grade = '5–6'; }
+    else if(score <= 6){ grade = '6–7'; }
+    else { grade = '8–9'; }
+
+    document.getElementById('stamp-grade').textContent = grade;
+    document.getElementById('results-grade-text').textContent = grade;
+    document.getElementById('results-sub').textContent = `${score} of ${QUESTIONS.length} correct`;
+
+
+
+    show('screen-results');
+  }
+
+  function submitCapture(e){
+    e.preventDefault();
+    // Wire this up to your ESP (Mailchimp / ConvertKit / etc.) —
+    // either via their form action endpoint or a fetch() call to their API.
+    document.getElementById('capture-block').style.display = 'none';
+    document.getElementById('thanks-block').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
